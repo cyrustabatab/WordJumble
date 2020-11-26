@@ -1,27 +1,34 @@
 import random
 import tkinter
 from tkinter import messagebox
+from scrape_atp_players import get_players
 
 
-with open('words.txt','r') as f:
-    word_bank = f.readlines()
-
-
-
+players = False
+try:
+    word_bank = get_players() #requires internet connection
+except:
+    with open('words.txt','r') as f:
+        word_bank = f.readlines()
+else:
+    players = True
 
 def remove(label):
-
+    global lives
     label.grid_remove()
     check_button.configure(state='active')
-    if label is correct_label:
+    if label is correct_label or label is info_label:
         shuffled_word = get_word_and_shuffle()
+        info_label['text'] =  f"The word is {word}"
         word_label.configure(text=shuffled_word)
+        lives = 5
+        lives_label['text'] = f"Lives: {lives}"
 
 
 
 
 def check():
-
+    global lives
 
     user_input = guess_entry.get()
 
@@ -37,8 +44,15 @@ def check():
             correct_label.grid()
             window.after(1000,remove,correct_label)
         else:
-            incorrect_label.grid()
-            window.after(1000,remove,incorrect_label)
+            lives -= 1
+            lives_label['text'] = f"Lives: {lives}"
+            if lives != 0:
+                incorrect_label.grid()
+                window.after(1000,remove,incorrect_label)
+            else:
+                info_label.grid()
+                window.after(1000,remove,info_label)
+
 
 
         check_button.configure(state='disabled') 
@@ -47,34 +61,14 @@ def check():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def get_word_and_shuffle():
     global word
     word = random.choice(word_bank)
     word = word.strip().lower()
+    if players:
+        words = word.split()
+        word = words[-1]
+
     shuffled_word = list(word)
     random.shuffle(shuffled_word)
 
@@ -97,6 +91,7 @@ title_label.grid(row=0,column=0,columnspan=2)
 
 
 word = None
+lives = 5
 shuffled_word = get_word_and_shuffle()
 
 word_label = tkinter.Label(text=shuffled_word,font=title_font)
@@ -115,30 +110,21 @@ guess_entry.grid(row=2,column=1)
 
 
 check_button = tkinter.Button(text='CHECK',font=normal_font,command=check)
-
 check_button.grid(row=3,column=0,columnspan=2,pady=20)
 
-
+lives_label = tkinter.Label(text=f"Lives: {lives}",fg='gold',font=normal_font)
+lives_label.grid(row=4,column=0,columnspan=2)
 
 correct_label = tkinter.Label(text='CORRECT',fg='green',font=normal_font)
 incorrect_label = tkinter.Label(text='INCORRECT',fg='red',font=normal_font)
+info_label = tkinter.Label(text=f"The word is {word}",font=normal_font,fg='red')
+info_label.grid(row=5,column=0,columnspan=2)
+info_label.grid_remove()
 
-correct_label.grid(row=4,column=0,columnspan=2)
+correct_label.grid(row=5,column=0,columnspan=2)
 correct_label.grid_remove()
-incorrect_label.grid(row=4,column=0,columnspan=2)
+incorrect_label.grid(row=5,column=0,columnspan=2)
 incorrect_label.grid_remove()
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
